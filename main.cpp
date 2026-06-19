@@ -1,4 +1,5 @@
 #include <fstream>
+#include <iomanip>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -12,24 +13,28 @@ struct Feedback {
 };
 
 void showSection(const string& title) {
-    cout << "\n========================================\n";
-    cout << title << "\n";
-    cout << "========================================\n";
+    cout << "\n" << title << "\n";
+    cout << string(title.length(), '-') << "\n";
 }
 
-void showUnderlinedText(const string& text) {
+void showUnderlinedLine(const string& text) {
     cout << text << "\n";
     cout << string(text.length(), '-') << "\n";
 }
 
-int readChoice(const string& prompt, int minimum, int maximum) {
+int readChoice(const string& prompt, int minimum, int maximum, bool allowQuit = true) {
     string input;
 
     while (true) {
-        cout << prompt << " (or q to quit): ";
+        cout << prompt;
+        if (allowQuit) {
+            cout << " (or q to quit)";
+        }
+        cout << ": ";
+
         getline(cin, input);
 
-        if (input == "q" || input == "Q") {
+        if (allowQuit && (input == "q" || input == "Q")) {
             return -1;
         }
 
@@ -42,14 +47,22 @@ int readChoice(const string& prompt, int minimum, int maximum) {
 
         if (!isNumber) {
             cout << "Invalid input. Please enter a number from "
-                 << minimum << " to " << maximum << ", or q to quit.\n\n";
+                 << minimum << " to " << maximum;
+            if (allowQuit) {
+                cout << ", or q to quit";
+            }
+            cout << ".\n\n";
             continue;
         }
 
         int choice = stoi(input);
         if (choice < minimum || choice > maximum) {
             cout << "Invalid input. Please enter a number from "
-                 << minimum << " to " << maximum << ", or q to quit.\n\n";
+                 << minimum << " to " << maximum;
+            if (allowQuit) {
+                cout << ", or q to quit";
+            }
+            cout << ".\n\n";
         } else {
             return choice;
         }
@@ -93,34 +106,54 @@ void showMenu(const string& title, const string options[], int count) {
     }
 }
 
+void showComparisonBorder() {
+    cout << "+" << string(18, '-')
+         << "+" << string(32, '-')
+         << "+" << string(32, '-') << "+\n";
+}
+
+void showComparisonRow(const string& feature, const string& basic, const string& premium) {
+    cout << "| " << left << setw(16) << feature
+         << " | " << setw(30) << basic
+         << " | " << setw(30) << premium << " |\n";
+}
+
+void showPriceBorder() {
+    cout << "+" << string(12, '-')
+         << "+" << string(74, '-') << "+\n";
+}
+
+void showPriceRow(const string& plan, const string& price) {
+    cout << "| " << left << setw(10) << plan
+         << " | " << setw(72) << price << " |\n";
+}
+
 void showPlanComparison() {
     showSection("Spotify plan comparison");
 
-    showUnderlinedText("Basic plan");
-    cout << "- Free listening with advertisements\n";
-    cout << "- Online streaming with limited playback control\n";
-    cout << "- Suitable for users who want legal music access without paying\n\n";
-
-    showUnderlinedText("Premium plan");
-    cout << "- Ad-free listening\n";
-    cout << "- Offline downloads\n";
-    cout << "- Better playback control and convenience\n";
-    cout << "- Suitable for users who listen often or want fewer interruptions\n";
+    showComparisonBorder();
+    showComparisonRow("Feature", "Spotify Basic", "Spotify Premium");
+    showComparisonBorder();
+    showComparisonRow("Cost", "Free", "Paid monthly plan");
+    showComparisonRow("Advertisements", "Includes advertisements", "Ad-free listening");
+    showComparisonRow("Offline use", "Online streaming only", "Offline downloads available");
+    showComparisonRow("Playback control", "Limited playback control", "Better playback control");
+    showComparisonRow("Best for", "Low-cost legal music access", "Frequent, convenient use");
+    showComparisonBorder();
 }
 
-string getPremiumPlanName(int premiumPlan) {
-    switch (premiumPlan) {
-        case 1:
-            return "Individual";
-        case 2:
-            return "Student";
-        case 3:
-            return "Duo";
-        case 4:
-            return "Family";
-        default:
-            return "No Premium plan selected";
-    }
+void showPremiumPlanPrices() {
+    showSection("Premium plan prices");
+
+    showPriceBorder();
+    showPriceRow("Plan", "Price");
+    showPriceBorder();
+    showPriceRow("Individual", "RM9.50 for 3 months, then RM17.50/month after");
+    showPriceRow("Student", "RM9.50 for 2 months, then RM9.50/month after");
+    showPriceRow("Duo", "RM24.50 for 2 months, then RM24.50/month after");
+    showPriceRow("Family", "RM27.90/month for up to 4 Premium accounts");
+    showPriceRow("Add-ons", "Ability to buy 1-2 additional Premium accounts with recurring billing");
+    showPriceBorder();
 }
 
 void showSongSuggestions(int genre) {
@@ -208,43 +241,16 @@ int main() {
         "Lo-fi / Study"
     };
 
-    const string planTypes[] = {
-        "Basic",
-        "Premium"
-    };
-
-    const string premiumPlans[] = {
-        "Individual - RM9.50 for 3 months, then RM17.50/month after",
-        "Student - RM9.50 for 2 months, then RM9.50/month after",
-        "Duo - RM24.50 for 2 months, then RM24.50/month after",
-        "Family - RM27.90/month for up to 4 Premium accounts, with the ability to buy 1-2 additional Premium accounts using a recurring subscription"
-    };
-
     vector<Feedback> feedbackList;
     int runAgain = 1;
     bool quitProgram = false;
 
-    showSection("Spotify Listening Advisor");
-    cout << "It recommends Spotify Free, Spotify Premium, or music ownership based on user needs.\n";
+    showUnderlinedLine("Spotify Listening Advisor");
+    showUnderlinedLine("Welcome to Spotify Listening Advisor.");
 
     while (runAgain == 1 && !quitProgram) {
         showPlanComparison();
-        showMenu("Choose your plan type first", planTypes, 2);
-        int planType = readChoice("Choose plan type (1-2)", 1, 2);
-        if (planType == -1) {
-            quitProgram = true;
-            break;
-        }
-
-        int premiumPlan = 0;
-        if (planType == 2) {
-            showMenu("Premium plan options", premiumPlans, 4);
-            premiumPlan = readChoice("Choose Premium plan (1-4)", 1, 4);
-            if (premiumPlan == -1) {
-                quitProgram = true;
-                break;
-            }
-        }
+        showPremiumPlanPrices();
 
         showMenu("Listener type", listenerTypes, 4);
         int listenerType = readChoice("Choose listener type (1-4)", 1, 4);
@@ -296,12 +302,6 @@ int main() {
         int freeScore = 0;
         int premiumScore = 0;
         int ownershipScore = 0;
-
-        if (planType == 1) {
-            freeScore += 2;
-        } else {
-            premiumScore += 2;
-        }
 
         switch (listenerType) {
             case 1:
@@ -381,7 +381,7 @@ int main() {
             recommendation = "Spotify Premium";
             reason = "You benefit from convenience, fewer interruptions, discovery, and offline listening.";
         } else if (freeScore >= premiumScore && freeScore >= ownershipScore) {
-            recommendation = "Spotify Free";
+            recommendation = "Spotify Basic";
             reason = "You value low cost and legal access more than full control or ad-free listening.";
         } else {
             recommendation = "Buy/download music or use CDs for key albums";
@@ -389,15 +389,11 @@ int main() {
         }
 
         showSection("Recommendation");
-        cout << "Selected plan type: " << planTypes[planType - 1] << "\n";
-        if (premiumPlan != 0) {
-            cout << "Selected Premium option: " << getPremiumPlanName(premiumPlan) << "\n";
-        }
         cout << "Recommended choice: " << recommendation << ".\n";
         cout << "Reason: " << reason << "\n";
 
         showSection("Scores");
-        cout << "Spotify Free: " << freeScore << "\n";
+        cout << "Spotify Basic: " << freeScore << "\n";
         cout << "Spotify Premium: " << premiumScore << "\n";
         cout << "Music ownership: " << ownershipScore << "\n";
 
@@ -429,12 +425,8 @@ int main() {
         saveFeedbackToFile(feedback);
 
         cout << "\nThank you. Your feedback has been stored.\n";
-        cout << "It was also saved to spotify_feedback_reviews.txt.\n";
 
-        runAgain = readChoice("\nDo you want to use the advisor again? (1 = yes, 2 = no)", 1, 2);
-        if (runAgain == -1) {
-            quitProgram = true;
-        }
+        runAgain = readChoice("\nDo you want to continue using the advisor? (1 = yes, 2 = no)", 1, 2, false);
     }
 
     if (quitProgram) {

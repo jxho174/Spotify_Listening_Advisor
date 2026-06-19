@@ -1,25 +1,79 @@
+#include <fstream>
 #include <iostream>
 #include <limits>
 #include <string>
+#include <vector>
 
 using namespace std;
 
+struct Feedback {
+    string recommendation;
+    int rating;
+    string review;
+};
+
 int readChoice(const string& prompt, int minimum, int maximum) {
-    int choice;
+    string input;
 
     while (true) {
-        cout << prompt;
-        cin >> choice;
+        cout << prompt << " (or q to quit): ";
+        getline(cin, input);
 
-        if (cin.fail() || choice < minimum || choice > maximum) {
-            cin.clear();
-            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        if (input == "q" || input == "Q") {
+            return -1;
+        }
+
+        bool isNumber = !input.empty();
+        for (char c : input) {
+            if (c < '0' || c > '9') {
+                isNumber = false;
+            }
+        }
+
+        if (!isNumber) {
             cout << "Invalid input. Please enter a number from "
-                 << minimum << " to " << maximum << ".\n\n";
+                 << minimum << " to " << maximum << ", or q to quit.\n\n";
+            continue;
+        }
+
+        int choice = stoi(input);
+        if (choice < minimum || choice > maximum) {
+            cout << "Invalid input. Please enter a number from "
+                 << minimum << " to " << maximum << ", or q to quit.\n\n";
         } else {
-            cin.ignore(numeric_limits<streamsize>::max(), '\n');
             return choice;
         }
+    }
+}
+
+void saveFeedbackToFile(const Feedback& feedback) {
+    ofstream outFile("spotify_feedback_reviews.txt", ios::app);
+
+    if (!outFile) {
+        cout << "Warning: feedback file could not be opened.\n";
+        return;
+    }
+
+    outFile << "Recommendation: " << feedback.recommendation << "\n";
+    outFile << "Rating: " << feedback.rating << "/5\n";
+    outFile << "Review: " << feedback.review << "\n";
+    outFile << "------------------------------\n";
+}
+
+void showStoredFeedback(const vector<Feedback>& feedbackList) {
+    cout << "\nFeedback stored this session\n";
+    cout << "----------------------------\n";
+
+    if (feedbackList.empty()) {
+        cout << "No feedback was entered.\n";
+        return;
+    }
+
+    for (int i = 0; i < static_cast<int>(feedbackList.size()); ++i) {
+        cout << "Feedback " << (i + 1) << "\n";
+        cout << "Recommendation: " << feedbackList[i].recommendation << "\n";
+        cout << "Rating: " << feedbackList[i].rating << "/5\n";
+        cout << "Review: " << feedbackList[i].review << "\n\n";
     }
 }
 
@@ -30,227 +84,258 @@ void showMenu(const string& title, const string options[], int count) {
     }
 }
 
-int main() {
-    const string roles[] = {
-        "Student or beginner creator",
-        "Freelancer or small studio",
-        "Large professional studio",
-        "Education or training team"
-    };
+void showSongSuggestions(int genre) {
+    cout << "\nRecommended songs / playlist style\n";
+    cout << "----------------------------------\n";
 
-    const string tasks[] = {
-        "Video editing",
-        "Photo/design editing",
-        "Mixed media campaign",
-        "Learning and practice"
-    };
-
-    const string internetLevels[] = {
-        "Weak or unstable",
-        "Average",
-        "Strong"
-    };
-
-    cout << "Creative Cloud Editing Advisor\n";
-    cout << "This program connects to the Part 1 topic: Adobe Creative Cloud as a disruptive innovation.\n";
-    cout << "It recommends an editing workflow based on user needs, cost sensitivity, internet access, and collaboration.\n";
-
-    showMenu("User type", roles, 4);
-    int role = readChoice("Choose user type (1-4): ", 1, 4);
-
-    showMenu("Main creative task", tasks, 4);
-    int task = readChoice("Choose task (1-4): ", 1, 4);
-
-    showMenu("Internet quality", internetLevels, 3);
-    int internet = readChoice("Choose internet quality (1-3): ", 1, 3);
-
-    int budgetSensitive = readChoice("\nIs lower upfront cost important? (1 = yes, 2 = no): ", 1, 2);
-    int collaboration = readChoice("Do you need real-time collaboration? (1 = yes, 2 = no): ", 1, 2);
-
-    int cloudScore = 0;
-    int traditionalScore = 0;
-    int hybridScore = 0;
-
-    switch (role) {
+    switch (genre) {
         case 1:
-            cloudScore += 3;
+            cout << "Genre: Pop\n";
+            cout << "- Espresso - Sabrina Carpenter\n";
+            cout << "- As It Was - Harry Styles\n";
+            cout << "- Blinding Lights - The Weeknd\n";
             break;
         case 2:
-            cloudScore += 2;
-            hybridScore += 1;
+            cout << "Genre: Hip-hop / Rap\n";
+            cout << "- HUMBLE. - Kendrick Lamar\n";
+            cout << "- God's Plan - Drake\n";
+            cout << "- See You Again - Tyler, The Creator ft. Kali Uchis\n";
             break;
         case 3:
-            traditionalScore += 2;
-            hybridScore += 2;
+            cout << "Genre: K-pop\n";
+            cout << "- Dynamite - BTS\n";
+            cout << "- Super Shy - NewJeans\n";
+            cout << "- How You Like That - BLACKPINK\n";
             break;
         case 4:
-            cloudScore += 2;
-            hybridScore += 1;
+            cout << "Genre: Rock\n";
+            cout << "- Bohemian Rhapsody - Queen\n";
+            cout << "- Smells Like Teen Spirit - Nirvana\n";
+            cout << "- Viva La Vida - Coldplay\n";
             break;
+        case 5:
+            cout << "Genre: Lo-fi / Study\n";
+            cout << "- Lo-fi study beats playlist\n";
+            cout << "- Chillhop essentials playlist\n";
+            cout << "- Peaceful piano playlist\n";
+            break;
+        default:
+            cout << "No genre selected.\n";
     }
+}
 
-    switch (task) {
-        case 1:
-            hybridScore += 2;
+int main() {
+    const string listenerTypes[] = {
+        "Student or casual listener",
+        "Daily commuter",
+        "Music collector",
+        "Playlist/discovery fan"
+    };
+
+    const string situations[] = {
+        "Mostly online listening",
+        "Often offline or weak internet",
+        "Long study/work sessions",
+        "Parties or shared playlists"
+    };
+
+    const string budgets[] = {
+        "Free only",
+        "Low monthly budget",
+        "Comfortable paying for convenience"
+    };
+
+    const string genres[] = {
+        "Pop",
+        "Hip-hop / Rap",
+        "K-pop",
+        "Rock",
+        "Lo-fi / Study"
+    };
+
+    vector<Feedback> feedbackList;
+    int runAgain = 1;
+    bool quitProgram = false;
+
+    cout << "Spotify Listening Advisor\n";
+    cout << "This program connects to the Part 1 topic: Spotify as a disruptive innovation.\n";
+    cout << "It recommends Spotify Free, Spotify Premium, or music ownership based on user needs.\n";
+
+    while (runAgain == 1 && !quitProgram) {
+        showMenu("Listener type", listenerTypes, 4);
+        int listenerType = readChoice("Choose listener type (1-4)", 1, 4);
+        if (listenerType == -1) {
+            quitProgram = true;
             break;
-        case 2:
-            cloudScore += 2;
+        }
+
+        showMenu("Listening situation", situations, 4);
+        int situation = readChoice("Choose situation (1-4)", 1, 4);
+        if (situation == -1) {
+            quitProgram = true;
             break;
-        case 3:
-            cloudScore += 2;
-            #include <iostream>
-#include <limits>
-#include <string>
+        }
 
-using namespace std;
+        showMenu("Budget", budgets, 3);
+        int budget = readChoice("Choose budget (1-3)", 1, 3);
+        if (budget == -1) {
+            quitProgram = true;
+            break;
+        }
 
-int readChoice(const string& prompt, int minimum, int maximum) {
-    int choice;
+        int acceptsAds = readChoice("\nCan you accept advertisements? (1 = yes, 2 = no)", 1, 2);
+        if (acceptsAds == -1) {
+            quitProgram = true;
+            break;
+        }
 
-    while (true) {
-        cout << prompt;
-        cin >> choice;
+        int wantsDiscovery = readChoice("Do you want playlist/music discovery features? (1 = yes, 2 = no)", 1, 2);
+        if (wantsDiscovery == -1) {
+            quitProgram = true;
+            break;
+        }
 
-        if (cin.fail() || choice < minimum || choice > maximum) {
-            cin.clear();
-            cin.ignore(numeric_limits<streamsize>::max(), '\n');
-            cout << "Invalid input. Please enter a number from "
-                 << minimum << " to " << maximum << ".\n\n";
+        showMenu("Favourite music genre", genres, 5);
+        int genre = readChoice("Choose genre (1-5)", 1, 5);
+        if (genre == -1) {
+            quitProgram = true;
+            break;
+        }
+
+        int freeScore = 0;
+        int premiumScore = 0;
+        int ownershipScore = 0;
+
+        switch (listenerType) {
+            case 1:
+                freeScore += 3;
+                premiumScore += 1;
+                break;
+            case 2:
+                premiumScore += 3;
+                break;
+            case 3:
+                ownershipScore += 4;
+                break;
+            case 4:
+                freeScore += 1;
+                premiumScore += 3;
+                break;
+        }
+
+        switch (situation) {
+            case 1:
+                freeScore += 2;
+                premiumScore += 2;
+                break;
+            case 2:
+                ownershipScore += 3;
+                premiumScore += 2;
+                break;
+            case 3:
+                premiumScore += 2;
+                break;
+            case 4:
+                premiumScore += 2;
+                freeScore += 1;
+                break;
+        }
+
+        if (budget == 1) {
+            freeScore += 4;
+        } else if (budget == 2) {
+            premiumScore += 2;
+            freeScore += 1;
         } else {
-            cin.ignore(numeric_limits<streamsize>::max(), '\n');
-            return choice;
+            premiumScore += 3;
+            ownershipScore += 1;
+        }
+
+        if (acceptsAds == 1) {
+            freeScore += 2;
+        } else {
+            premiumScore += 3;
+        }
+
+        if (wantsDiscovery == 1) {
+            premiumScore += 2;
+            freeScore += 1;
+        } else {
+            ownershipScore += 2;
+        }
+
+        if (genre == 5) {
+            premiumScore += 1;
+        }
+
+        string recommendation;
+        string reason;
+
+        if (premiumScore >= freeScore && premiumScore >= ownershipScore) {
+            recommendation = "Spotify Premium";
+            reason = "You benefit from convenience, fewer interruptions, discovery, and offline listening.";
+        } else if (freeScore >= premiumScore && freeScore >= ownershipScore) {
+            recommendation = "Spotify Free";
+            reason = "You value low cost and legal access more than full control or ad-free listening.";
+        } else {
+            recommendation = "Buy/download music or use CDs for key albums";
+            reason = "You value ownership, offline reliability, and control over access.";
+        }
+
+        cout << "\nRecommendation\n";
+        cout << "--------------\n";
+        cout << "Recommended choice: " << recommendation << ".\n";
+        cout << "Reason: " << reason << "\n";
+
+        cout << "\nScores\n";
+        cout << "Spotify Free: " << freeScore << "\n";
+        cout << "Spotify Premium: " << premiumScore << "\n";
+        cout << "Music ownership: " << ownershipScore << "\n";
+
+        showSongSuggestions(genre);
+
+        int rating = readChoice("\nRate this recommendation (1 = poor, 5 = excellent)", 1, 5);
+        if (rating == -1) {
+            quitProgram = true;
+            break;
+        }
+
+        string review;
+
+        cout << "Write your feedback/review (or q to quit): ";
+        getline(cin, review);
+
+        if (review == "q" || review == "Q") {
+            quitProgram = true;
+            break;
+        }
+
+        if (review.empty()) {
+            review = "No written review provided.";
+        }
+
+        Feedback feedback = {recommendation, rating, review};
+        feedbackList.push_back(feedback);
+        saveFeedbackToFile(feedback);
+
+        cout << "\nThank you. Your feedback has been stored.\n";
+        cout << "It was also saved to spotify_feedback_reviews.txt.\n";
+
+        runAgain = readChoice("\nDo you want to use the advisor again? (1 = yes, 2 = no)", 1, 2);
+        if (runAgain == -1) {
+            quitProgram = true;
         }
     }
-}
 
-void showMenu(const string& title, const string options[], int count) {
-    cout << "\n" << title << "\n";
-    for (int i = 0; i < count; ++i) {
-        cout << "  " << (i + 1) << ". " << options[i] << "\n";
-    }
-}
-
-int main() {
-    const string roles[] = {
-        "Student or beginner creator",
-        "Freelancer or small studio",
-        "Large professional studio",
-        "Education or training team"
-    };
-
-    const string tasks[] = {
-        "Video editing",
-        "Photo/design editing",
-        "Mixed media campaign",
-        "Learning and practice"
-    };
-
-    const string internetLevels[] = {
-        "Weak or unstable",
-        "Average",
-        "Strong"
-    };
-
-    cout << "Creative Cloud Editing Advisor\n";
-    cout << "This program connects to the Part 1 topic: Adobe Creative Cloud as a disruptive innovation.\n";
-    cout << "It recommends an editing workflow based on user needs, cost sensitivity, internet access, and collaboration.\n";
-
-    showMenu("User type", roles, 4);
-    int role = readChoice("Choose user type (1-4): ", 1, 4);
-
-    showMenu("Main creative task", tasks, 4);
-    int task = readChoice("Choose task (1-4): ", 1, 4);
-
-    showMenu("Internet quality", internetLevels, 3);
-    int internet = readChoice("Choose internet quality (1-3): ", 1, 3);
-
-    int budgetSensitive = readChoice("\nIs lower upfront cost important? (1 = yes, 2 = no): ", 1, 2);
-    int collaboration = readChoice("Do you need real-time collaboration? (1 = yes, 2 = no): ", 1, 2);
-
-    int cloudScore = 0;
-    int traditionalScore = 0;
-    int hybridScore = 0;
-
-    switch (role) {
-        case 1:
-            cloudScore += 3;
-            break;
-        case 2:
-            cloudScore += 2;
-            hybridScore += 1;
-            break;
-        case 3:
-            traditionalScore += 2;
-            hybridScore += 2;
-            break;
-        case 4:
-            cloudScore += 2;
-            hybridScore += 1;
-            break;
+    if (quitProgram) {
+        cout << "\nProgram quit by user.\n";
     }
 
-    switch (task) {
-        case 1:
-            hybridScore += 2;
-            break;
-        case 2:
-            cloudScore += 2;
-            break;
-        case 3:
-            cloudScore += 2;
-            hybridScore += 2;
-            break;
-        case 4:
-            cloudScore += 3;
-            break;
-    }
-
-    if (internet == 1) {
-        traditionalScore += 3;
-        hybridScore += 2;
-    } else if (internet == 2) {
-        hybridScore += 2;
-        cloudScore += 1;
-    } else {
-        cloudScore += 3;
-    }
-
-    if (budgetSensitive == 1) {
-        cloudScore += 2;
-    } else {
-        traditionalScore += 1;
-        hybridScore += 1;
-    }
-
-    if (collaboration == 1) {
-        cloudScore += 3;
-        hybridScore += 1;
-    } else {
-        traditionalScore += 1;
-    }
-
-    cout << "\nRecommendation\n";
-    cout << "--------------\n";
-
-    if (cloudScore >= traditionalScore && cloudScore >= hybridScore) {
-        cout << "Use a Creative Cloud-first workflow.\n";
-        cout << "Reason: Your profile benefits from accessibility, subscription access, regular updates, and collaboration.\n";
-    } else if (hybridScore >= cloudScore && hybridScore >= traditionalScore) {
-        cout << "Use a hybrid workflow.\n";
-        cout << "Reason: Cloud tools are useful, but some offline control is still important for your situation.\n";
-    } else {
-        cout << "Use a traditional/offline editing workflow.\n";
-        cout << "Reason: Your situation values stability, local control, and lower dependence on internet access.\n";
-    }
-
-    cout << "\nScores\n";
-    cout << "Creative Cloud workflow: " << cloudScore << "\n";
-    cout << "Hybrid workflow: " << hybridScore << "\n";
-    cout << "Traditional workflow: " << traditionalScore << "\n";
+    showStoredFeedback(feedbackList);
 
     cout << "\nConnection to disruption model\n";
-    cout << "Adobe Creative Cloud began as a more accessible and flexible alternative to expensive professional workflows.\n";
-    cout << "As cloud sync, collaboration, and cross-platform access improved, it moved upward into professional use.\n";
+    cout << "Spotify disrupted music by making legal streaming easier and cheaper than buying every song.\n";
+    cout << "As features improved, streaming moved from an alternative into the mainstream music market.\n";
 
     return 0;
 }

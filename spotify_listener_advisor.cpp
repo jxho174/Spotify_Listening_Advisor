@@ -30,6 +30,46 @@ void showMenu(const string& title, const string options[], int count) {
     }
 }
 
+void showSongSuggestions(int genre) {
+    cout << "\nRecommended songs / playlist style\n";
+    cout << "----------------------------------\n";
+
+    switch (genre) {
+        case 1:
+            cout << "Genre: Pop\n";
+            cout << "- Espresso - Sabrina Carpenter\n";
+            cout << "- As It Was - Harry Styles\n";
+            cout << "- Blinding Lights - The Weeknd\n";
+            break;
+        case 2:
+            cout << "Genre: Hip-hop / Rap\n";
+            cout << "- HUMBLE. - Kendrick Lamar\n";
+            cout << "- God's Plan - Drake\n";
+            cout << "- See You Again - Tyler, The Creator ft. Kali Uchis\n";
+            break;
+        case 3:
+            cout << "Genre: K-pop\n";
+            cout << "- Dynamite - BTS\n";
+            cout << "- Super Shy - NewJeans\n";
+            cout << "- How You Like That - BLACKPINK\n";
+            break;
+        case 4:
+            cout << "Genre: Rock\n";
+            cout << "- Bohemian Rhapsody - Queen\n";
+            cout << "- Smells Like Teen Spirit - Nirvana\n";
+            cout << "- Viva La Vida - Coldplay\n";
+            break;
+        case 5:
+            cout << "Genre: Lo-fi / Study\n";
+            cout << "- Lo-fi study beats playlist\n";
+            cout << "- Chillhop essentials playlist\n";
+            cout << "- Peaceful piano playlist\n";
+            break;
+        default:
+            cout << "No genre selected.\n";
+    }
+}
+
 int main() {
     const string listenerTypes[] = {
         "Student or casual listener",
@@ -51,6 +91,14 @@ int main() {
         "Comfortable paying for convenience"
     };
 
+    const string genres[] = {
+        "Pop",
+        "Hip-hop / Rap",
+        "K-pop",
+        "Rock",
+        "Lo-fi / Study"
+    };
+
     cout << "Spotify Listening Advisor\n";
     cout << "This program connects to the Part 1 topic: Spotify as a disruptive innovation.\n";
     cout << "It recommends Spotify Free, Spotify Premium, or music ownership based on user needs.\n";
@@ -66,6 +114,9 @@ int main() {
 
     int acceptsAds = readChoice("\nCan you accept advertisements? (1 = yes, 2 = no): ", 1, 2);
     int wantsDiscovery = readChoice("Do you want playlist/music discovery features? (1 = yes, 2 = no): ", 1, 2);
+
+    showMenu("Favourite music genre", genres, 5);
+    int genre = readChoice("Choose genre (1-5): ", 1, 5);
 
     int freeScore = 0;
     int premiumScore = 0;
@@ -129,6 +180,10 @@ int main() {
         ownershipScore += 2;
     }
 
+    if (genre == 5) {
+        premiumScore += 1;
+    }
+
     cout << "\nRecommendation\n";
     cout << "--------------\n";
 
@@ -147,6 +202,8 @@ int main() {
     cout << "Spotify Free: " << freeScore << "\n";
     cout << "Spotify Premium: " << premiumScore << "\n";
     cout << "Music ownership: " << ownershipScore << "\n";
+
+    showSongSuggestions(genre);
 
     cout << "\nConnection to disruption model\n";
     cout << "Spotify disrupted music by making legal streaming easier and cheaper than buying every song.\n";

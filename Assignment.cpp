@@ -1,6 +1,5 @@
 #include <fstream>
 #include <iostream>
-#include <limits>
 #include <string>
 #include <vector>
 
@@ -11,6 +10,12 @@ struct Feedback {
     int rating;
     string review;
 };
+
+void showSection(const string& title) {
+    cout << "\n========================================\n";
+    cout << title << "\n";
+    cout << "========================================\n";
+}
 
 int readChoice(const string& prompt, int minimum, int maximum) {
     string input;
@@ -61,8 +66,7 @@ void saveFeedbackToFile(const Feedback& feedback) {
 }
 
 void showStoredFeedback(const vector<Feedback>& feedbackList) {
-    cout << "\nFeedback stored this session\n";
-    cout << "----------------------------\n";
+    showSection("Feedback stored this session");
 
     if (feedbackList.empty()) {
         cout << "No feedback was entered.\n";
@@ -78,15 +82,14 @@ void showStoredFeedback(const vector<Feedback>& feedbackList) {
 }
 
 void showMenu(const string& title, const string options[], int count) {
-    cout << "\n" << title << "\n";
+    showSection(title);
     for (int i = 0; i < count; ++i) {
         cout << "  " << (i + 1) << ". " << options[i] << "\n";
     }
 }
 
 void showSongSuggestions(int genre) {
-    cout << "\nRecommended songs / playlist style\n";
-    cout << "----------------------------------\n";
+    showSection("Recommended songs / playlist style");
 
     switch (genre) {
         case 1:
@@ -124,6 +127,23 @@ void showSongSuggestions(int genre) {
     }
 }
 
+void showListeningSummary(int hoursPerWeek) {
+    int monthlyHours = hoursPerWeek * 4;
+    int estimatedSongs = monthlyHours * 15;
+
+    showSection("Listening summary");
+    cout << "Estimated listening time per month: " << monthlyHours << " hours\n";
+    cout << "Estimated songs played per month: " << estimatedSongs << " songs\n";
+
+    if (hoursPerWeek >= 15) {
+        cout << "Listening habit: Heavy listener\n";
+    } else if (hoursPerWeek >= 6) {
+        cout << "Listening habit: Regular listener\n";
+    } else {
+        cout << "Listening habit: Light listener\n";
+    }
+}
+
 int main() {
     const string listenerTypes[] = {
         "Student or casual listener",
@@ -157,8 +177,7 @@ int main() {
     int runAgain = 1;
     bool quitProgram = false;
 
-    cout << "Spotify Listening Advisor\n";
-    cout << "This program connects to the Part 1 topic: Spotify as a disruptive innovation.\n";
+    showSection("Spotify Listening Advisor");
     cout << "It recommends Spotify Free, Spotify Premium, or music ownership based on user needs.\n";
 
     while (runAgain == 1 && !quitProgram) {
@@ -198,6 +217,13 @@ int main() {
         showMenu("Favourite music genre", genres, 5);
         int genre = readChoice("Choose genre (1-5)", 1, 5);
         if (genre == -1) {
+            quitProgram = true;
+            break;
+        }
+
+        showSection("Listening time");
+        int hoursPerWeek = readChoice("How many hours do you listen per week? (0-80)", 0, 80);
+        if (hoursPerWeek == -1) {
             quitProgram = true;
             break;
         }
@@ -268,6 +294,15 @@ int main() {
             premiumScore += 1;
         }
 
+        if (hoursPerWeek >= 15) {
+            premiumScore += 3;
+        } else if (hoursPerWeek >= 6) {
+            premiumScore += 1;
+            freeScore += 1;
+        } else {
+            freeScore += 1;
+        }
+
         string recommendation;
         string reason;
 
@@ -282,16 +317,16 @@ int main() {
             reason = "You value ownership, offline reliability, and control over access.";
         }
 
-        cout << "\nRecommendation\n";
-        cout << "--------------\n";
+        showSection("Recommendation");
         cout << "Recommended choice: " << recommendation << ".\n";
         cout << "Reason: " << reason << "\n";
 
-        cout << "\nScores\n";
+        showSection("Scores");
         cout << "Spotify Free: " << freeScore << "\n";
         cout << "Spotify Premium: " << premiumScore << "\n";
         cout << "Music ownership: " << ownershipScore << "\n";
 
+        showListeningSummary(hoursPerWeek);
         showSongSuggestions(genre);
 
         int rating = readChoice("\nRate this recommendation (1 = poor, 5 = excellent)", 1, 5);
@@ -332,10 +367,6 @@ int main() {
     }
 
     showStoredFeedback(feedbackList);
-
-    cout << "\nConnection to disruption model\n";
-    cout << "Spotify disrupted music by making legal streaming easier and cheaper than buying every song.\n";
-    cout << "As features improved, streaming moved from an alternative into the mainstream music market.\n";
 
     return 0;
 }

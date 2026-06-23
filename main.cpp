@@ -245,7 +245,6 @@ int main() {
     int runAgain = 1;
     bool quitProgram = false;
 
-    showUnderlinedLine("Spotify Listening Advisor");
     showUnderlinedLine("Welcome to Spotify Listening Advisor.");
 
     while (runAgain == 1 && !quitProgram) {

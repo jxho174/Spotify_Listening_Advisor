@@ -426,7 +426,10 @@ int main() {
 
         cout << "\nThank you. Your feedback has been stored.\n";
 
-        runAgain = readChoice("\nDo you want to continue using the advisor? (1 = yes, 2 = no)", 1, 2, false);
+        runAgain = readChoice("\nDo you want to continue using the advisor? (1 = yes, 2 = no)", 1, 2);
+        if (runAgain == -1) {
+            quitProgram = true;
+        }
     }
 
     if (quitProgram) {

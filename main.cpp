@@ -55,7 +55,14 @@ int readChoice(const string& prompt, int minimum, int maximum, bool allowQuit = 
             continue;
         }
 
-        int choice = stoi(input);
+        int choice = 0;
+        for (char c : input) {
+            choice = choice * 10 + (c - '0');
+            if (choice > maximum) {
+                break;
+            }
+        }
+
         if (choice < minimum || choice > maximum) {
             cout << "Invalid input. Please enter a number from "
                  << minimum << " to " << maximum;
@@ -212,6 +219,43 @@ void showListeningSummary(int hoursPerWeek) {
     }
 }
 
+double getPremiumMonthlyPrice(int isStudentEligible) {
+    if (isStudentEligible == 1) {
+        return 9.50;
+    }
+
+    return 17.50;
+}
+
+void showCostEstimate(const string& recommendation, int hoursPerWeek, int isStudentEligible) {
+    double premiumMonthlyPrice = getPremiumMonthlyPrice(isStudentEligible);
+    int monthlyHours = hoursPerWeek * 4;
+
+    showSection("Personal cost estimate");
+
+    if (recommendation == "Spotify Premium") {
+        cout << fixed << setprecision(2);
+        cout << "Estimated Premium monthly cost: RM" << premiumMonthlyPrice << "\n";
+
+        if (monthlyHours > 0) {
+            cout << "Estimated cost per listening hour: RM"
+                 << (premiumMonthlyPrice / monthlyHours) << "\n";
+        } else {
+            cout << "Estimated cost per listening hour: Not available because weekly listening is 0.\n";
+        }
+
+        if (isStudentEligible == 1) {
+            cout << "Student plan discount considered in this estimate.\n";
+        }
+    } else if (recommendation == "Spotify Basic") {
+        cout << "Estimated monthly cost: RM0.00\n";
+        cout << "Main trade-off: advertisements and limited offline/control features.\n";
+    } else {
+        cout << "Estimated monthly subscription cost: RM0.00\n";
+        cout << "Main trade-off: you may need to pay separately for songs, albums, or CDs.\n";
+    }
+}
+
 int main() {
     const string listenerTypes[] = {
         "Student or casual listener",
@@ -272,6 +316,12 @@ int main() {
             break;
         }
 
+        int isStudentEligible = readChoice("Are you eligible for a Spotify Student plan? (1 = yes, 2 = no)", 1, 2);
+        if (isStudentEligible == -1) {
+            quitProgram = true;
+            break;
+        }
+
         int acceptsAds = readChoice("\nCan you accept advertisements? (1 = yes, 2 = no)", 1, 2);
         if (acceptsAds == -1) {
             quitProgram = true;
@@ -302,6 +352,7 @@ int main() {
         int premiumScore = 0;
         int ownershipScore = 0;
 
+        // Scores are adjusted from the user's answers to compare the three options fairly.
         switch (listenerType) {
             case 1:
                 freeScore += 3;
@@ -345,6 +396,10 @@ int main() {
         } else {
             premiumScore += 3;
             ownershipScore += 1;
+        }
+
+        if (isStudentEligible == 1 && budget != 1) {
+            premiumScore += 1;
         }
 
         if (acceptsAds == 1) {
@@ -397,6 +452,7 @@ int main() {
         cout << "Music ownership: " << ownershipScore << "\n";
 
         showListeningSummary(hoursPerWeek);
+        showCostEstimate(recommendation, hoursPerWeek, isStudentEligible);
         showSongSuggestions(genre);
 
         int rating = readChoice("\nRate this recommendation (1 = poor, 5 = excellent)", 1, 5);

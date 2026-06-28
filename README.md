@@ -15,6 +15,7 @@ The advisor asks users about:
 - listener type
 - usual listening situation
 - budget preference
+- student plan eligibility
 - advertisement tolerance
 - interest in music discovery
 - favourite music genre
@@ -33,8 +34,10 @@ The final result includes a recommendation, explanation, score breakdown, monthl
 - Clear menu-based console interface
 - Spotify plan and price comparison tables
 - Personalized recommendation scoring
+- Student plan and monthly cost estimate
 - Five music genres with song or playlist suggestions
 - Weekly-to-monthly listening estimates
+- Estimated cost per listening hour for Premium recommendations
 - Light, regular, and heavy listener categories
 - Input validation for every numbered choice
 - `q` or `Q` quit option throughout the questionnaire

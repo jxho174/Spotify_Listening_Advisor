@@ -1,3 +1,4 @@
+```mermaid
 graph TD
     A[Start Program] --> B[Display Plan Comparison & Prices]
     B --> C{Collect 10 Inputs}
@@ -30,3 +31,4 @@ graph TD
     I --> J{Run Again?}
     J -- Yes --> B
     J -- No --> K[End Program]
+```
